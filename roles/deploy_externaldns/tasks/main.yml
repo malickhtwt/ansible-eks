@@ -1,0 +1,59 @@
+---
+# tasks file for deploy_externaldns
+
+- name: verify OIDC is supported
+  shell: |
+   aws eks describe-cluster --name {{ cluster_name }} \
+   --query "cluster.identity.oidc.issuer" --output text
+  register: OIDC
+  failed_when: "OIDC.rc != 0"
+
+- name: Associate OIDC to cluster
+  shell: |
+   eksctl utils associate-iam-oidc-provider \
+   --cluster {{ cluster_name }} --approve
+  register: OIDC_association
+  failed_when: "OIDC_association.rc != 0"
+
+- name: create externaldns policy
+  iam_managed_policy:
+   policy_name: "{{ externaldns_policy_name }}"
+   policy: "{{ lookup('file','policies/{{ externaldns_policy }}') }}"
+   state: present
+   profile: "{{ aws_profile }}"
+
+- name: Get policy ARN
+  shell: |
+   aws iam list-policies \
+   --query 'Policies[?PolicyName==`{{ externaldns_policy_name }}`].Arn' \ 
+   --output text
+  register: _policy_arn
+
+- name: Set Policy ARN
+  set_fact:
+   policy_arn: "{{ _policy_arn.stdout }}"
+
+- name: Get the zone id
+  shell: |
+   aws route53 list-hosted-zones-by-name --output json \
+   --dns-name "{{ cluster_name }}." --query HostedZones[0].Id --out text
+  register: _zone_id
+  
+- name: Set the zone id
+  set_fact:
+   zone_id: "{{ _zone_id.stdout.split('/')[2] }}"
+
+- name: Create service account for externaldns
+  shell: |
+   eksctl create iamserviceaccount \
+   --cluster {{ cluster_name }} \
+   --name "external-dns" \
+   --attach-policy-arn {{ policy_arn }} \
+   --approve
+
+- name: apply externaldns manifest
+  command: "kubectl create --filename -"
+  args:
+   stdin: "{{ item }}"
+  with_items:
+   - "{{ lookup('template', 'external-dns-with-rbac.yaml.j2') }}"

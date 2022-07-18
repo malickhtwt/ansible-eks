@@ -1,0 +1,29 @@
+---
+
+- name: Prepare Kubernetes cluster environment
+  hosts: localhost
+  tags: prepare
+  vars_files:
+    - group_vars/all.yaml
+
+  roles:
+  - install_kubectl
+  - install_eksctl
+
+- name: Create Kubernets cluster with eksclt
+  hosts: localhost
+  tags: build
+  vars_files:
+   - group_vars/all.yaml
+
+  roles:
+   - create_cluster
+
+- name: Deploy Kubernetes operators and app
+  hosts: localhost
+  tags: deploy
+  vars_files:
+   - group_vars/all.yaml
+
+  roles:
+   - deploy_externaldns

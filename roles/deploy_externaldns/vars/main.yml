@@ -1,0 +1,5 @@
+---
+# vars file for deploy_externaldns
+
+externaldns_policy_name: AllowExternalDNSUpdates
+externaldns_policy: externaldns.json

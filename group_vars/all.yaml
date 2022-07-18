@@ -1,0 +1,17 @@
+---
+# Domain name
+domain_name: sahlx.com
+
+# cluster_name
+cluster_name: ansible-eks
+
+# aws settings
+aws_profile: default
+aws_region: us-east-1
+
+#eksctl nodegroup settings
+name: ansible-eks
+instancetype: t2.small
+desiredcapacity: 2
+volumesize: 8
+amifamily: Ubuntu2004

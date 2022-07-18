@@ -1,0 +1,29 @@
+---
+# tasks file for install_eksctl
+
+- name: Capturing eksctl command
+  command: which eksctl
+  register: _eksctl_command
+  changed_when: false
+  ignore_errors: true
+
+- name: Setting eksctl command path
+  set_fact: 
+   eksctl_command: "{{ _eksctl_command['stdout'] }}" 
+  when: _eksctl_command.rc != 1
+
+- name: Get eksctl version
+  command: "{{ eksctl_command }} version"
+  register: _eksctl_version
+  when: eksctl_command is defined
+
+- name: Download eksclt
+  get_url:
+   url: "{{ eksclt_download_path }}"
+   dest: "{{ eksctl_command | default('/usr/local/bin/eksctl') }}"
+   mode: a+x
+   force: yes
+  when:
+   - ansible_os_family == 'Darwin'
+   - "eksctl_command is not defined or eksctl_version not in _eksclt_version.sdout"
+  become: true

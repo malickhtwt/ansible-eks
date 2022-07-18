@@ -1,0 +1,9 @@
+---
+# tasks file for create_cluster
+
+- name: Create cluster with eksclt
+  command: "eksctl create cluster -f -"
+  args:
+   stdin: "{{ item }}"
+  with_items:
+   - "{{ lookup('template', 'cluster.yaml.j2') }}"

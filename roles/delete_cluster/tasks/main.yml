@@ -1,0 +1,16 @@
+---
+# tasks file for delete_cluster
+
+- name: Delete externaldns policy
+  iam_managed_policy:
+   policy_name: "{{ externaldns_policy_name }}"
+   policy: "{{ lookup('file','policies/{{ externaldns_policy }}') }}"
+   state: absent
+   profile: "{{ aws_profile }}"
+
+- name: Delete cluster with eksclt
+  command: "eksctl delete cluster -f -"
+  args:
+   stdin: "{{ item }}"
+  with_items:
+   - "{{ lookup('template', 'cluster.yaml.j2') }}"
