@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: postgres
+ labels:
+  app: postgres
+spec:
+ selector:
+  matchLabels:
+   app: postgres
+ #replicas: 1
+ template:
+  metadata:
+   labels:
+    app: postgres
+  spec:
+   containers:
+    - name: postgres
+      image: postgres:9.5
+      # pod will throw an error that volume is not free, volume automatically
+      # creates a dir name los+found so we need to ignore that by passing 
+      # this argument
+      #args:
+      # - "--ignore-db-dir=lost+found"
+      volumeMounts:
+       - mountPath: /var/lib/postgresql/data
+         name: postgres-db
+      ports:
+       - name: postgres-port
+         containerPort: 5432
+      env:
+       - name: POSTGRES_PASSWORD
+         valueFrom:
+          secretKeyRef:
+           name: ecom-secret 
+           key: ecom-password
+       - name: POSTGRES_USER
+         value: "ecommerce"
+   #nodeSelector:
+   # zone: us-east-1b
+   #volumes:
+   # - name: ecom-db-vol
+   #   awsElasticBlockStore:
+   #    volumeID: vol-0cb8c8300126bce1f
+   #    fsType: ext4
+   volumes:
+    - name: postgres-db
+      hostPath:
+       # Directory location on host
+       path: /postgres_data
+       type: DirectoryOrCreate

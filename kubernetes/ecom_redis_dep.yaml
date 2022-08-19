@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: redis
+ labels:
+  app: redis
+spec:
+ selector:
+  matchLabels:
+   app: redis
+ #replicas: 1
+ template:
+  metadata:
+   labels:
+    app: redis
+  spec:
+   initContainers:
+    - name: config-redis
+      image: redis:3.0-alpine
+      command: ["sh","-c"]
+      args:
+       - |
+         cp /tmp/redis/redis.conf /etc/redis/redis.conf
+      volumeMounts:
+       - name: redis-config
+         mountPath: /etc/redis/
+       - name: config
+         mountPath: /tmp/redis/
+   containers:
+    - name: redis
+      image: redis:3.0-alpine
+      command: ["redis-server"]
+      args: ["/etc/redis/redis.conf"]
+      volumeMounts:
+       - mountPath: /data
+         name: data
+       - mountPath: /etc/redis/
+         name: redis-config
+      ports:
+       - name: redis-port
+         containerPort: 6379
+   #nodeSelector:
+   # zone: us-east-1b
+   #volumes:
+   # - name: ecom-db-vol
+   #   awsElasticBlockStore:
+   #    volumeID: vol-0cb8c8300126bce1f
+   #    fsType: ext4
+   volumes:
+    - name: redis-config
+      emptyDir: {}
+    - name: config
+      configMap:
+       name: redis-config
+    - name: data
+      hostPath:
+       # directory loaction on host
+       path: /data
+       type: DirectoryOrCreate
+

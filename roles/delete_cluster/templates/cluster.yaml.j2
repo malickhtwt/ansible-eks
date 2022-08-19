@@ -6,7 +6,7 @@ metadata:
   region: {{ aws_region }}
 
 nodeGroups:
-  - name: {{ name }}
+  - name: {{ nodegroup_name }}
     instanceType: {{ instancetype }}
     desiredCapacity: {{ desiredcapacity }}
     volumeSize: {{ volumesize }}

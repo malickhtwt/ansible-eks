@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: ecom-app
+ labels:
+  app: ecom-app
+spec:
+ #replicas: 1
+ selector:
+  matchLabels:
+   app: ecom-app
+ template:
+  metadata:
+   labels:
+    app: ecom-app
+  spec:
+   containers:
+    - name: ecom-app
+      image: malickhtwt/dockerfile_k8s
+      ports:
+       - name: ecom-app-port
+         containerPort: 8000
+   initContainers:
+    - name: check-db-ready
+      #image: postgres:9.5
+      image: busybox
+      #command: ['sh', '-c', 
+      #'until pg_isready -h postgres -p 5432; 
+      #do echo waiting for database; sleep 2; done;']
+      command: ['sh', '-c',
+       'until nslookup postgres; do echo waiting for redis; sleep 2; done;' ]
+    - name: check-redis-ready
+      image: busybox
+      command: ['sh', '-c', 
+       'until nslookup redis; do echo waiting for redis; sleep 2; done;' ]

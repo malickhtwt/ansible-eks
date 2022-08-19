@@ -10,7 +10,7 @@ aws_profile: default
 aws_region: us-east-1
 
 #eksctl nodegroup settings
-name: ansible-eks
+nodegroup_name: ansible-eks
 instancetype: t2.small
 desiredcapacity: 2
 volumesize: 8

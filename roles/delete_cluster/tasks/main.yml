@@ -9,7 +9,7 @@
    profile: "{{ aws_profile }}"
 
 - name: Delete cluster with eksclt
-  command: "eksctl delete cluster -f -"
+  command: "eksctl delete cluster -f  -"
   args:
    stdin: "{{ item }}"
   with_items:
